@@ -1,1 +1,1 @@
-# Repo for preliminary CRISC_RS analyses
+# Repo for preliminary CRISC Remote Sensing analyses
