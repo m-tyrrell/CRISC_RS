@@ -3,16 +3,21 @@ import ee
 from ee_plugin import Map
 import geopandas as gpd
 import json
+import os
 
-# helper function to put the geodataframe in the right format for constructing an ee object
+# Set path to wd
+path = os.path.join("/","Users","MT","Nextcloud","Projects","GOV-BGD20GIZ7333_CRISC_AI")
+
+# helper function: lookup shp index by city/levell geodataframe format, ee object construct
 def shp_to_ee_fmt(city, level):
     dic = {'Satkhira':{2:56,3:469,4:4307},'Sirajganj':{2:59,3:496,4:4493}}
     ind = dic[city][level]
-    shp_path = "/Users/MT/Nextcloud/Projects/GOV-BGD20GIZ7333_CRISC_AI/CRISC_RS/bgd_adm_bbs_20201113_SHP/bgd_admbnda_adm"+str(level)+"_bbs_20201113.shp"
+    shp_path = os.path.join(path,"CRISC_RS","bgd_adm_bbs_20201113_SHP","bgd_admbnda_adm"+str(level)+"_bbs_20201113.shp")
     gdf = gpd.read_file(shp_path, crs='EPSG:4326')
     x = gdf.iloc[ind:ind+1,:]
     data = json.loads(x.to_json())
     return data['features'][0]['geometry']['coordinates']
+
 # Source shp: https://data.humdata.org/dataset/administrative-boundaries-of-bangladesh-as-of-2015
 
 viirs = ee.Image(ee.ImageCollection("NOAA/VIIRS/DNB/MONTHLY_V1/VCMSLCFG").filterDate("2019-01-01","2019-12-31").median().select('avg_rad'))
@@ -37,7 +42,6 @@ ghslPopVis= {"min":0.0, "max":5000.0,"palette":['000000', '448564', '70daa4', 'f
 aoi = ee.Geometry.MultiPolygon(shp_to_ee_fmt(city = 'Sirajganj', level = 3))
 
 # initialize the map
-#Mao = geemap.Map()
 Map.addLayer(viirs.clip(aoi), {}, "VIIRS-DNB Nightlights", opacity=0.5)
 Map.addLayer(ghslSet.clip(aoi), ghslSetVis, 'GHSL Degree of Urbanization', opacity=0.5)
 Map.addLayer(ghslPop.clip(aoi), ghslPopVis, 'GHSL Population', opacity=0.5)
@@ -46,5 +50,3 @@ Map.addLayer(water.clip(aoi), waterVis, 'JRC Water Prevalence', opacity = 0.6)
 Map.centerObject(aoi, 13)
 #Map.addLayer(
 #    first.clip(aoi), {'bands': ['B4', 'B3', 'B2'], 'min': 0, 'max': 2000}, 'first')
-#Map.addLayerControl()
-#Map
