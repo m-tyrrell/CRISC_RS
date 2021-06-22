@@ -18,6 +18,15 @@ def shp_to_ee_fmt(city, level):
     data = json.loads(x.to_json())
     return data['features'][0]['geometry']['coordinates']
 
+# Histogram function
+def histo(dist, band, bins, city, level):
+    aoi = ee.Geometry.MultiPolygon(shp_to_ee_fmt(city = city, level = level))
+    arr = np.array(dist.sampleRectangle(region=aoi).get(band).getInfo())
+    data = arr.flatten()
+    fig, ax = plt.subplots(figsize=(15,5))
+    sns.histplot(data, bins=bins,ax=ax)
+    plt.title('Distribution: '+city, fontsize=20)
+
 # Source shp: https://data.humdata.org/dataset/administrative-boundaries-of-bangladesh-as-of-2015
 
 viirs = ee.Image(ee.ImageCollection("NOAA/VIIRS/DNB/MONTHLY_V1/VCMSLCFG").filterDate("2019-01-01","2019-12-31").median().select('avg_rad'))
@@ -30,6 +39,14 @@ ghslSetVis= {"min":0.0, "max":3.0,"palette":['000000', '448564', '70daa4', 'ffff
 ghslPop = ee.ImageCollection("JRC/GHSL/P2016/POP_GPW_GLOBE_V1").filter(ee.Filter.date('2015-01-01', '2015-12-31')).select('population_count').median();
 ghslPopVis= {"min":0.0, "max":5000.0,"palette":['000000', '448564', '70daa4', 'ffffff']}
 
+# Flowminder Poverty Predictions based on mobile data (https://royalsocietypublishing.org/doi/full/10.1098/rsif.2016.0690)
+# 2011 estimates of mean DHS wealth index score per grid square 
+pov_wi = ee.Image('users/marktyrrell111/bgd2011wipov')
+# 2013 estimates of income in USD per grid square 
+pov_inc = ee.Image('users/marktyrrell111/bgd2013incpov')
+# 013 estimates of mean likelihood of living in poverty per grid square, as defined by $2.50 a day poverty line
+pov_prop = ee.Image('users/marktyrrell111/bgd2013ppipov')
+
 # Get Sentinal
 #aoi_bd = ee.Feature(ee.FeatureCollection("FAO/GAUL/2015/level0").filter(ee.Filter.eq('ADM0_NAME', 'Bangladesh')).first()).geometry()
 #first = (ee.ImageCollection('COPERNICUS/S2_SR')
@@ -38,8 +55,10 @@ ghslPopVis= {"min":0.0, "max":5000.0,"palette":['000000', '448564', '70daa4', 'f
          # .sort('CLOUDY_PIXEL_PERCENTAGE')
          # .first())
 
+
 #AOI: Satkhira District (Khulna Division)
-aoi = ee.Geometry.MultiPolygon(shp_to_ee_fmt(city = 'Sirajganj', level = 3))
+#___________________________________________
+aoi = ee.Geometry.MultiPolygon(shp_to_ee_fmt(city = 'Satkhira', level = 3))
 
 # initialize the map
 Map.addLayer(viirs.clip(aoi), {}, "VIIRS-DNB Nightlights", opacity=0.5)
@@ -47,6 +66,25 @@ Map.addLayer(ghslSet.clip(aoi), ghslSetVis, 'GHSL Degree of Urbanization', opaci
 Map.addLayer(ghslPop.clip(aoi), ghslPopVis, 'GHSL Population', opacity=0.5)
 Map.addLayer(srtm.clip(aoi), {'min':-1, 'max':14}, 'SRTM Elevation', opacity = 0.6)
 Map.addLayer(water.clip(aoi), waterVis, 'JRC Water Prevalence', opacity = 0.6)
+Map.addLayer(pov_inc.clip(aoi), {'min':130, 'max':200, "palette":['red', 'yellow']}, "BD Poverty: Income", opacity=0.6)
+Map.addLayer(pov_wi.clip(aoi), {'min':-0.2, 'max':1.2, "palette":['red', 'yellow']}, "BD cPoverty: Wealth Index", opacity=0.6)
 Map.centerObject(aoi, 13)
-#Map.addLayer(
-#    first.clip(aoi), {'bands': ['B4', 'B3', 'B2'], 'min': 0, 'max': 2000}, 'first')
+
+#AOI: Sirajganj District (Khulna Division)
+#___________________________________________
+aoi = ee.Geometry.MultiPolygon(shp_to_ee_fmt(city = 'Sirajganj', level = 3))
+
+# initialize the map
+Map.addLayer(viirs.clip(aoi), {}, "VIIRS-DNB Nightlights", opacity=0.5)
+Map.addLayer(ghslSet.clip(aoi), ghslSetVis, 'GHSL Degree of Urbanization', opacity=0.5)
+Map.addLayer(ghslPop.clip(aoi), ghslPopVis, 'GHSL Population', opacity=0.5)
+Map.addLayer(srtm.clip(aoi), {'min':5, 'max':25}, 'SRTM Elevation', opacity = 0.6)
+Map.addLayer(water.clip(aoi), waterVis, 'JRC Water Prevalence', opacity = 0.6)
+Map.addLayer(pov_inc.clip(aoi), {'min':120, 'max':210, "palette":['red', 'yellow']}, "BD Poverty: Income", opacity=0.6)
+Map.addLayer(pov_wi.clip(aoi), {'min':-0.75, 'max':1.1, "palette":['red', 'yellow']}, "BD cPoverty: Wealth Index", opacity=0.6)
+Map.centerObject(aoi, 13)
+
+
+
+
+
