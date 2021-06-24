@@ -5,6 +5,7 @@ import geopandas as gpd
 import json
 import os
 
+
 # Set path to wd
 path = os.path.join("/","Users","MT","Nextcloud","Projects","GOV-BGD20GIZ7333_CRISC_AI")
 
@@ -85,6 +86,48 @@ Map.addLayer(pov_wi.clip(aoi), {'min':-0.75, 'max':1.1, "palette":['red', 'yello
 Map.centerObject(aoi, 13)
 
 
+#AOI: Sirajganj District (Khulna Division) UPPR POVERTY LAYERS
+#___________________________________________
+aoi = ee.Geometry.MultiPolygon(shp_to_ee_fmt(city = 'Sirajganj', level = 3))
 
+shp_path = os.path.join(path,"CRISC_RS","All","Poor_settlement_without_single.shp")
+# UPPR feature collection: Sirajganj
+# UPPR feature collection: Sirajganj
+# shp_to_ee without geemap
+import shapefile
+shp_path = os.path.join(path,"CRISC_RS","All","Poor_settlement_without_single.shp")
+in_gdf = gpd.read_file(shp_path)
+out_gdf = in_gdf.to_crs(epsg="4326")
+out_shp = shp_path.replace(".shp", "_gcs.shp")
+out_gdf.to_file(out_shp)
+in_shp = out_shp
+reader = shapefile.Reader(in_shp)
+out_dict = reader.__geo_interface__
+uppr = ee.FeatureCollection(out_dict["features"])
+#uppr = geemap.shp_to_ee(shp_path)
+# Extract relevant polygons by class
+p1 = uppr.filterMetadata('Pov_Quart','equals','Extremely Poor')
+p2 = uppr.filterMetadata('Pov_Quart','equals','Marginally poor')
+p3 = uppr.filterMetadata('Pov_Quart','equals','Moderately Poor')
+p4 = uppr.filterMetadata('Pov_Quart','equals','Very Poor')
 
-
+vis_params = {
+    'color': '000000', 
+    'pointSize': 1,
+    'pointShape': 'circle',
+    'width': 0.5,
+    'lineType': 'solid',
+}
+#Extremely Poor
+vis_params.update({"fillColor": "E30B17AA"})
+Map.addLayer(p1.style(**vis_params), vis_params, 'UPPR: Extremely Poor')
+#Marginally poor
+vis_params.update({"fillColor": "CCCCCCAA"})
+Map.addLayer(p2.style(**vis_params), vis_params, 'UPPR: Marginally Poor')
+#Moderately Poor
+vis_params.update({"fillColor": "FEEAC0AA"})
+Map.addLayer(p3.style(**vis_params), vis_params, 'UPPR: Moderately Poor')
+#Very Poor
+vis_params.update({"fillColor": "FDA883AA"})
+Map.addLayer(p4.style(**vis_params), vis_params, 'UPPR: Very Poor')
+Map.centerObject(aoi, 12)
