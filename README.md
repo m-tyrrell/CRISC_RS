@@ -1,7 +1,7 @@
 # Repo for preliminary CRISC Remote Sensing analyses
 
 ## Project: GIZ 81263741 - Climate Resilient Inclusive Smart Cities (CRISC)
-CRISC tackles the core issue of national and local-decision makers in urban development who are not in a position to systematically shape their development and investment planning both in a climate-sensitive manner and in accordance with the local needs of the vulnerable population. The project uses the methodological approach of promoting planning capacities and investment decisions for climate resilient and inclusive urban development through training and advisory services.
+CRISC tackles the core issue of national and local-decision makers in urban development who are not in a position to systematically shape their development and investment planning both in a climate-sensitive manner and in accordance with the local needs of the vulnerable population. The project uses the methodological approach of promoting planning capacities and investment decisions for climate resilient and inclusive urban development through training and advisory services. In this context, GIS analysis was deployed to augment on the ground resources for baseline assessments. 
 
 ## Analysis
 GIS Analyses for 2 Bangladeshi cities (Srirajganj and Satkhira) in QGIS format (Google Earth Engine plugin): using the following layers masked for GAUL Administrative Level 3 ('Sadar'):
